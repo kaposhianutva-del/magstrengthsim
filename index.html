@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Magnet Strength Investigation Simulation</title>
+    <style>
+        :root {
+            --wood-color: #8B5A2B;
+            --wood-grain: #724A23;
+            --panel-bg: #f4f4f6;
+            --text-dark: #333333;
+            --accent-blue: #2A6F97;
+            --glow-color: #FFD700;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #eef1f6;
+            color: var(--text-dark);
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* 3-Column Layout */
+        .panel-left {
+            width: 20%;
+            background-color: var(--panel-bg);
+            border-right: 2px solid #dcdce1;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+        }
+
+        .panel-center {
+            width: 55%;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            background-color: #e3ebf5;
+        }
+
+        .panel-right {
+            width: 25%;
+            background-color: var(--panel-bg);
+            border-left: 2px solid #dcdce1;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            box-shadow: -2px 0 5px rgba(0,0,0,0.05);
+        }
+
+        /* Typography & UI Elements */
+        h1 { font-size: 1.4rem; color: var(--accent-blue); margin-bottom: 5px; }
+        h2 { font-size: 1.1rem; margin-bottom: 10px; border-bottom: 2px solid #dcdce1; padding-bottom: 5px; }
+        p { font-size: 0.9rem; line-height: 1.4; color: #555; }
+        
+        .instruction-step {
+            background: white;
+            padding: 12px;
+            border-radius: 6px;
+            border-left: 4px solid var(--accent-blue);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        /* Lab Table Workspace */
+        .lab-table {
+            flex-grow: 1;
+            background: linear-gradient(135deg, var(--wood-color) 0%, var(--wood-grain) 100%);
+            position: relative;
+            border-bottom: 15px solid #5a3a1b;
+            box-shadow: inset 0 20px 40px rgba(0,0,0,0.3);
+            overflow: hidden;
+            cursor: crosshair;
+        }
+
+        /* Magnet Cups Setup */
+        .magnets-container {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            position: absolute;
+            bottom: 40px;
+            padding: 0 20px;
+        }
+
+        .magnet-station {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 22%;
+            position: relative;
+        }
+
+        .cup {
+            width: 80px;
+            height: 90px;
+            background: linear-gradient(180deg, #dd3b3b 0%, #a82323 100%);
+            border-radius: 10px 10px 40px 40px;
+            position: relative;
+            box-shadow: 0 10px 15px rgba(0,0,0,0.4);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: 2px solid #8f1e1e;
+            z-index: 2;
+        }
+
+        .cup::before {
+            content: '';
+            position: absolute;
+            top: 5px;
+            width: 70px;
+            height: 15px;
+            background: #be2e2e;
+            border-radius: 50%;
+        }
+
+        .cup-label {
+            color: white;
+            font-weight: bold;
+            font-size: 1.6rem;
+            text-shadow: 1px 2px 4px rgba(0,0,0,0.5);
+            margin-top: 10px;
+        }
+
+        /* Googly Eyes */
+        .eyes {
+            position: absolute;
+            top: 25px;
+            display: flex;
+            gap: 12px;
+        }
+        .eye {
+            width: 16px;
+            height: 16px;
+            background: white;
+            border-radius: 50%;
+            position: relative;
+            border: 1px solid #777;
+        }
+        .pupil {
+            width: 7px;
+            height: 7px;
+            background: black;
+            border-radius: 50%;
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            transition: all 0.1s ease;
+        }
+
+        /* Active Magnet Glow State */
+        .magnet-station.active .cup {
+            transform: scale(1.05);
+            box-shadow: 0 0 25px var(--glow-color);
+            border-color: var(--glow-color);
+        }
+
+        /* Info Cards */
+        .info-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 6px;
+            padding: 8px;
+            margin-top: 15px;
+            width: 100%;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            font-size: 0.8rem;
+            border: 1px solid #ccc;
+            z-index: 1;
+        }
+        .info-line {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 3px;
+        }
+        .info-line strong { color: #555; }
+
+        /* Draggable Control Cup */
+        .control-cup {
+            width: 74px;
+            height: 84px;
+            background: linear-gradient(180deg, #3b82f6 0%, #1d4ed8 100%);
+            border: 2px solid #1e40af;
+            border-radius: 10px 10px 35px 35px;
+            position: absolute;
+            top: 100px;
+            left: 45%;
+            cursor: grab;
+            box-shadow: 0 15px 20px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            transform: translate(0, 0);
+        }
+        .control-cup:active { cursor: grabbing; }
+        .control-cup::before {
+            content: '';
+            position: absolute;
+            top: 5px;
+            width: 64px;
+            height: 12px;
+            background: #2563eb;
+            border-radius: 50%;
+        }
+        .control-label {
+            color: white;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 12px;
+            line-height: 1.1;
+        }
+
+        /* Dynamic Test Visualizations inside the Lab View */
+        .paperclips-pile {
+            position: absolute;
+            bottom: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-wrap: wrap;
+            width: 60px;
+            justify-content: center;
+            pointer-events: none;
+        }
+        .mini-clip {
+            width: 14px;
+            height: 6px;
+            border: 1.5px solid #aaa;
+            border-radius: 3px;
+            margin: 1px;
+            background-color: transparent;
+            transform: rotate(15deg);
+        }
+
+        /* Results Display Panel Styles */
+        .data-box {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            border: 1px solid #dcdce1;
+        }
+        .metric {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--accent-blue);
+            margin-top: 5px;
+            font-family: monospace;
+        }
+        .unit { font-size: 1rem; color: #666; font-family: sans-serif; }
+
+        .btn-action {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background-color: var(--accent-blue);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+            transition: background 0.2s;
+        }
+        .btn-action:hover { background-color: #1e5272; }
+        .btn-action:active { transform: scale(0.98); }
+
+        .status-light {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #ccc;
+            margin-right: 6px;
+        }
+        .status-light.active { background-color: #4ade80; animation: blink 1s infinite alternate; }
+
+        @keyframes blink { from { opacity: 0.5; } to { opacity: 1; } }
+    </style>
+</head>
+<body>
+
+    <div class="panel-left">
+        <h1>Magnet Lab</h1>
+        <p>Investigate the invisible forces governing different structures.</p>
+        
+        <div class="instruction-step">
+            <strong>Step 1:</strong> Drag the blue <strong>Control Cup</strong> around the lab bench.
+        </div>
+        <div class="instruction-step">
+            <strong>Step 2:</strong> Hover closely over any Red Target Cup (A-D) to activate it.
+        </div>
+        <div class="instruction-step">
+            <strong>Step 3:</strong> Watch real-time structural data populate on the right panel. Run the Paper Clip collection check!
+        </div>
+    </div>
+
+    <div class="panel-center">
+        <div class="lab-table" id="labTable">
+            
+            <div class="control-cup" id="controlCup">
+                <div class="eyes"><div class="eye"><div class="pupil"></div></div><div class="eye"><div class="pupil"></div></div></div>
+                <div class="control-label">CONTROL<br>TOOL</div>
+            </div>
+
+            <div class="magnets-container">
+                
+                <div class="magnet-station" id="station-A" data-id="A">
+                    <div class="cup">
+                        <div class="eyes"><div class="eye"><div class="pupil"></div></div><div class="eye"><div class="pupil"></div></div></div>
+                        <div class="cup-label">A</div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-line"><strong>Material:</strong> <span>Ferrite</span></div>
+                        <div class="info-line"><strong>Mass:</strong> <span>45g</span></div>
+                        <div class="info-line"><strong>Size:</strong> <span>Small</span></div>
+                    </div>
+                </div>
+
+                <div class="magnet-station" id="station-B" data-id="B">
+                    <div class="cup">
+                        <div class="eyes"><div class="eye"><div class="pupil"></div></div><div class="eye"><div class="pupil"></div></div></div>
+                        <div class="cup-label">B</div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-line"><strong>Material:</strong> <span>Neodymium</span></div>
+                        <div class="info-line"><strong>Mass:</strong> <span>48g</span></div>
+                        <div class="info-line"><strong>Size:</strong> <span>Small</span></div>
+                    </div>
+                </div>
+
+                <div class="magnet-station" id="station-C" data-id="C">
+                    <div class="cup">
+                        <div class="eyes"><div class="eye"><div class="pupil"></div></div><div class="eye"><div class="pupil"></div></div></div>
+                        <div class="cup-label">C</div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-line"><strong>Material:</strong> <span>Ferrite</span></div>
+                        <div class="info-line"><strong>Mass:</strong> <span>120g</span></div>
+                        <div class="info-line"><strong>Size:</strong> <span>Large</span></div>
+                    </div>
+                </div>
+
+                <div class="magnet-station" id="station-D" data-id="D">
+                    <div class="cup">
+                        <div class="eyes"><div class="eye"><div class="pupil"></div></div><div class="eye"><div class="pupil"></div></div></div>
+                        <div class="cup-label">D</div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-line"><strong>Material:</strong> <span>Alnico</span></div>
+                        <div class="info-line"><strong>Mass:</strong> <span>95g</span></div>
+                        <div class="info-line"><strong>Size:</strong> <span>Medium</span></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="panel-right">
+        <h2>Sensor Metrics</h2>
+        
+        <div class="data-box">
+            <p><span class="status-light" id="statusLight"></span> <strong>Active Target:</strong></p>
+            <div class="metric" id="activeDisplay">None</div>
+        </div>
+
+        <div class="data-box">
+            <p><strong>Levitation Gap Height:</strong></p>
+            <div class="metric" id="levHeightDisplay">0.0 <span class="unit">cm</span></div>
+            <p style="font-size:0.75rem; color:#888; margin-top:5px;">Continuous repulsion field interaction strength.</p>
+        </div>
+
+        <div class="data-box">
+            <p><strong>Paper Clip Extraction:</strong></p>
+            <div class="metric" id="clipsDisplay">-- <span class="unit">clips</span></div>
+            <button class="btn-action" id="clipBtn" style="margin-top:10px;" disabled>Run Collection Test</button>
+        </div>
+    </div>
+
+    <script>
+        // --- Hidden Science Engine Model Data ---
+        const magnetProperties = {
+            'A': { ap: 4,  rp: 1.8 }, // Weak Ferrite
+            'B': { ap: 14, rp: 4.8 }, // Extremely strong Neodymium
+            'C': { ap: 7,  rp: 2.5 }, // Massive Ferrite (Medium strength)
+            'D': { ap: 9,  rp: 3.2 }  // Alnico (Moderate-high strength)
+        };
+
+        // --- Core Application State Variables ---
+        let currentActiveMagnet = null;
+        let isDragging = false;
+        
+        // Physics coordinates
+        let currentX = 150;
+        let currentY = 100;
+        let targetX = 150;
+        let targetY = 100;
+        let levitationVisualOffset = 0; // Managed by the animation loop
+
+        // Cache DOM Elements
+        const labTable = document.getElementById('labTable');
+        const controlCup = document.getElementById('controlCup');
+        const stations = document.querySelectorAll('.magnet-station');
+        const activeDisplay = document.getElementById('activeDisplay');
+        const levHeightDisplay = document.getElementById('levHeightDisplay');
+        const clipsDisplay = document.getElementById('clipsDisplay');
+        const clipBtn = document.getElementById('clipBtn');
+        const statusLight = document.getElementById('statusLight');
+        const pupils = document.querySelectorAll('.pupil');
+
+        // --- Event Listeners for Interaction Loop ---
+        controlCup.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            e.preventDefault();
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (!isDragging) {
+                // Playful Googly Eye tracking when not grabbing the cup
+                trackEyes(e.clientX, e.clientY);
+                return;
+            }
+            
+            const rect = labTable.getBoundingClientRect();
+            // Bound coordinate calculations directly inside the visible table workspace limits
+            targetX = e.clientX - rect.left - (controlCup.offsetWidth / 2);
+            targetY = e.clientY - rect.top - (controlCup.offsetHeight / 2);
+
+            // Constraint boundaries to prevent cup from moving outside the wooden frame
+            targetX = Math.max(-10, Math.min(rect.width - controlCup.offsetWidth + 10, targetX));
+            targetY = Math.max(-10, Math.min(rect.height - controlCup.offsetHeight - 20, targetY));
+            
+            trackEyes(e.clientX, e.clientY);
+        });
+
+        window.addEventListener('mouseup', () => { isDragging = false; });
+
+        // Touch support for mobile interaction
+        controlCup.addEventListener('touchstart', (e) => { isDragging = true; });
+        window.addEventListener('touchmove', (e) => {
+            if (!isDragging) return;
+            const touch = e.touches[0];
+            const rect = labTable.getBoundingClientRect();
+            targetX = touch.clientX - rect.left - (controlCup.offsetWidth / 2);
+            targetY = touch.clientY - rect.top - (controlCup.offsetHeight / 2);
+            targetX = Math.max(-10, Math.min(rect.width - controlCup.offsetWidth + 10, targetX));
+            targetY = Math.max(-10, Math.min(rect.height - controlCup.offsetHeight - 20, targetY));
+        });
+        window.addEventListener('touchend', () => { isDragging = false; });
+
+        // Trigger discrete paper clip extraction event loop
+        clipBtn.addEventListener('click', () => {
+            if (!currentActiveMagnet) return;
+            
+            // Extract the scientific properties baseline configuration
+            const baseValue = magnetProperties[currentActiveMagnet].ap;
+            // Inject minor experimental error fluctuation (+/- 1 element variance margin)
+            const variance = Math.floor(Math.random() * 3) - 1; 
+            const finalCount = Math.max(0, baseValue + variance);
+
+            clipsDisplay.innerHTML = `${finalCount} <span class="unit">clips</span>`;
+            
+            // Build temporary visual clip entities under the active element target area
+            generatePaperclipsVisual(finalCount);
+        });
+
+        // --- Auxiliary Googly Eyes Eye Physics System ---
+        function trackEyes(mouseX, mouseY) {
+            pupils.forEach(pupil => {
+                const eyeRect = pupil.parentElement.getBoundingClientRect();
+                const eyeCenterX = eyeRect.left + eyeRect.width / 2;
+                const eyeCenterY = eyeRect.top + eyeRect.height / 2;
+                
+                const angle = Math.atan2(mouseY - eyeCenterY, mouseX - eyeCenterX);
+                const maxDist = 4; // Bound box boundary constraints
+                
+                pupil.style.transform = `translate(${Math.cos(angle) * maxDist}px, ${Math.sin(angle) * maxDist}px)`;
+            });
+        }
+
+        // --- Visual Effects Generator for Paper Clips ---
+        function generatePaperclipsVisual(count) {
+            // Flush older physical element indicators from any previous checks
+            const existingPile = document.querySelector('.paperclips-pile');
+            if (existingPile) existingPile.remove();
+
+            const activeStation = document.getElementById(`station-${currentActiveMagnet}`);
+            const pile = document.createElement('div');
+            pile.className = 'paperclips-pile';
+
+            for(let i=0; i < count; i++) {
+                const clip = document.createElement('div');
+                clip.className = 'mini-clip';
+                // Randomize tilt offsets slightly for authentic scattered feel
+                clip.style.transform = `rotate(${Math.random() * 360}deg)`;
+                pile.appendChild(clip);
+            }
+            activeStation.appendChild(pile);
+        }
+
+        // --- Central Animation Loop (Runs in continuous Real-Time via requestAnimationFrame) ---
+        function updateSimulationPhysics() {
+            // Easing lerp engine ensures completely smooth physics movement
+            currentX += (targetX - currentX) * 0.15;
+            currentY += (targetY - currentY) * 0.15;
+
+            // Compute distance to evaluate proximity mechanics fields
+            let closestStation = null;
+            let minimumDistance = 140; // Proximity threshold limits in pixel range dimensions
+            
+            const controlRect = controlCup.getBoundingClientRect();
+            const controlCenter = {
+                x: currentX + controlCup.offsetWidth / 2,
+                y: currentY + controlCup.offsetHeight / 2
+            };
+
+            stations.forEach(station => {
+                const cupEl = station.querySelector('.cup');
+                // Calculate position relative to container
+                const stationX = station.offsetLeft + (station.offsetWidth / 2);
+                const stationY = station.offsetTop + (cupEl.offsetHeight / 2) + 40; // baseline offset adjustments
+
+                const dx = controlCenter.x - stationX;
+                const dy = controlCenter.y - stationY;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+
+                if (distance < minimumDistance) {
+                    minimumDistance = distance;
+                    closestStation = station.getAttribute('data-id');
+                }
+            });
+
+            // Target state evaluation update loop handling transition triggers
+            if (closestStation !== currentActiveMagnet) {
+                // Clear out current states
+                stations.forEach(s => s.classList.remove('active'));
+                
+                currentActiveMagnet = closestStation;
+                
+                if (currentActiveMagnet) {
+                    document.getElementById(`station-${currentActiveMagnet}`).classList.add('active');
+                    activeDisplay.innerText = `Magnet ${currentActiveMagnet}`;
+                    statusLight.classList.add('active');
+                    clipBtn.removeAttribute('disabled');
+                } else {
+                    activeDisplay.innerText = "None";
+                    levHeightDisplay.innerHTML = `0.0 <span class="unit">cm</span>`;
+                    clipsDisplay.innerHTML = `-- <span class="unit">clips</span>`;
+                    statusLight.classList.remove('active');
+                    clipBtn.setAttribute('disabled', 'true');
+                    
+                    const existingPile = document.querySelector('.paperclips-pile');
+                    if (existingPile) existingPile.remove();
+                }
+            }
+
+            // If an active target selection is found, run field transformations
+            if (currentActiveMagnet) {
+                const targetProperties = magnetProperties[currentActiveMagnet];
+                
+                // Calculate repulsion curve factor based on exact physical positioning gaps
+                const distanceFactor = Math.max(0, (140 - minimumDistance) / 140); 
+                const computedLevHeight = targetProperties.rp * distanceFactor;
+                
+                levHeightDisplay.innerHTML = `${computedLevHeight.toFixed(1)} <span class="unit">cm</span>`;
+                
+                // Map repulsive tracking calculation vectors directly back onto standard visual transformations
+                levitationVisualOffset = computedLevHeight * 9; // scaling physics coefficient map multiplier
+            } else {
+                levitationVisualOffset += (0 - levitationVisualOffset) * 0.2;
+            }
+
+            // Render final calculations into the viewport elements
+            controlCup.style.left = `${currentX}px`;
+            controlCup.style.top = `${currentY - levitationVisualOffset}px`;
+
+            // Recall loop indefinitely
+            requestAnimationFrame(updateSimulationPhysics);
+        }
+
+        // Kick off loop processing sequence automatically on window layout build completions
+        requestAnimationFrame(updateSimulationPhysics);
+    </script>
+</body>
+</html>
