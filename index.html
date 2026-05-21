@@ -138,7 +138,7 @@
 
         .cup-container-box {
             width: 72px;
-            height: 140px; /* Tall container to allow inner stacking height */
+            height: 140px; 
             position: relative;
             display: flex;
             align-items: flex-end;
@@ -249,8 +249,6 @@
             border: 2px solid #1e40af;
             border-radius: 6px 6px 24px 24px;
             position: absolute;
-            top: 40px;
-            left: 40px;
             cursor: grab;
             display: flex;
             align-items: center;
@@ -471,10 +469,10 @@
 
     <script>
         const magnetProperties = {
-            'A': { ap: 4,  rp: 1.2, floatY: 55 },  // Ferrite (Weak: floats low, deep inside)
-            'B': { ap: 14, rp: 4.8, floatY: 15 },  // Neodymium (Strong: pushed high up like a hairdo)
-            'C': { ap: 7,  rp: 2.4, floatY: 42 },  // Cobalt (Medium)
-            'D': { ap: 10, rp: 3.5, floatY: 28 }   // Alnico (Medium-High)
+            'A': { ap: 4,  rp: 1.2, floatY: 55 },  // Ferrite (Weak: slides deeply inside)
+            'B': { ap: 14, rp: 4.8, floatY: 12 },  // Neodymium (Strong: sticks out high like a hairdo)
+            'C': { ap: 7,  rp: 2.4, floatY: 40 },  // Cobalt (Medium)
+            'D': { ap: 10, rp: 3.5, floatY: 25 }   // Alnico (Medium-High)
         };
 
         const instructionsText = {
@@ -486,7 +484,7 @@
         let isDragging = false;
         let selectedElement = null;
         let dragOffset = { x: 0, y: 0 };
-        let initialPositions = {};
+        let defaultControlPos = { left: 50, top: 50 };
 
         // DOM Elements
         const controlCup = document.getElementById('controlCup');
@@ -501,13 +499,12 @@
         const modeClipBtn = document.getElementById('modeClipBtn');
         const outputCardLev = document.getElementById('outputCardLev');
         const outputCardClip = document.getElementById('outputCardClip');
+        const labViewport = document.getElementById('labViewport');
 
         window.onload = () => {
-            // Save natural startup coordinates for standard redocking
-            saveResetPositions();
             setMode('levitation');
             
-            // Global Input Routing
+            // Input Handlers
             window.addEventListener('mousedown', startDrag);
             window.addEventListener('mousemove', dragMove);
             window.addEventListener('mouseup', endDrag);
@@ -516,14 +513,6 @@
             window.addEventListener('touchmove', dragMove, { passive: false });
             window.addEventListener('touchend', endDrag);
         };
-
-        function saveResetPositions() {
-            ['A', 'B', 'C', 'D'].forEach(id => {
-                const el = document.getElementById(`cupElement-${id}`);
-                initialPositions[id] = { left: el.offsetLeft, top: el.offsetTop };
-            });
-            initialPositions['control'] = { left: controlCup.offsetLeft, top: controlCup.offsetTop };
-        }
 
         function setMode(mode) {
             activeMode = mode;
@@ -563,12 +552,11 @@
             levHeightDisplay.innerHTML = `0.0 <span class="unit-label">cm</span>`;
             clipsDisplay.innerHTML = `0 <span class="unit-label">clips</span>`;
 
-            // Reset Blue Control position
-            controlCup.style.left = initialPositions['control'].left + 'px';
-            controlCup.style.top = initialPositions['control'].top + 'px';
-            document.getElementById('workspacePanel').appendChild(controlCup);
+            // Append safely to main viewport coordinate tree
+            labViewport.appendChild(controlCup);
+            controlCup.style.left = defaultControlPos.left + 'px';
+            controlCup.style.top = defaultControlPos.top + 'px';
 
-            // Reset Color Cups positions and clean vectors
             ['A', 'B', 'C', 'D'].forEach(id => {
                 const cup = document.getElementById(`cupElement-${id}`);
                 const containerBox = document.getElementById(`box-${id}`);
@@ -582,14 +570,13 @@
         modeLevBtn.addEventListener('click', () => setMode('levitation'));
         modeClipBtn.addEventListener('click', () => setMode('paperclip'));
 
-        // --- Drag & Drop Core System Engine ---
+        // --- Drag Engine ---
         function startDrag(e) {
             const pageX = e.touches ? e.touches[0].pageX : e.pageX;
             const pageY = e.touches ? e.touches[0].pageY : e.pageY;
             let targetNode = e.target.closest('.cup', '#controlCup');
             
             if (!targetNode) return;
-
             if (activeMode === 'levitation' && targetNode.id !== 'controlCup') return;
             if (activeMode === 'paperclip' && targetNode.id === 'controlCup') return;
 
@@ -598,25 +585,23 @@
             isDragging = true;
             selectedElement = targetNode;
             
-            // Lift completely into absolute overlay panel space during manual manipulation tracking
-            if (activeMode === 'paperclip') {
-                const rect = selectedElement.getBoundingClientRect();
-                const viewRect = document.getElementById('labViewport').getBoundingClientRect();
-                document.getElementById('labViewport').appendChild(selectedElement);
-                selectedElement.style.left = (rect.left - viewRect.left) + 'px';
-                selectedElement.style.top = (rect.top - viewRect.top) + 'px';
-            }
+            // Crucial Fix: Instantly pop item into parent container layer to absolute position beautifully
+            const rect = selectedElement.getBoundingClientRect();
+            const viewRect = labViewport.getBoundingClientRect();
+            labViewport.appendChild(selectedElement);
+            
+            selectedElement.style.left = (rect.left - viewRect.left) + 'px';
+            selectedElement.style.top = (rect.top - viewRect.top) + 'px';
 
-            const elRect = selectedElement.getBoundingClientRect();
-            dragOffset.x = pageX - elRect.left;
-            dragOffset.y = pageY - elRect.top;
+            dragOffset.x = pageX - rect.left;
+            dragOffset.y = pageY - rect.top;
         }
 
         function dragMove(e) {
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
             const clientY = e.touches ? e.touches[0].clientY : e.clientY;
             
-            // Eye tracking math
+            // Eye rotation tracks
             pupils.forEach(pupil => {
                 const eyeRect = pupil.parentElement.getBoundingClientRect();
                 const angle = Math.atan2(clientY - (eyeRect.top + 7), clientX - (eyeRect.left + 7));
@@ -625,11 +610,10 @@
 
             if (!isDragging || !selectedElement) return;
 
-            const viewRect = document.getElementById('labViewport').getBoundingClientRect();
+            const viewRect = labViewport.getBoundingClientRect();
             let newX = clientX - viewRect.left - dragOffset.x;
             let newY = clientY - viewRect.top - dragOffset.y;
 
-            // Boundaries limiting caps mapping zones checks
             newX = Math.max(0, Math.min(viewRect.width - selectedElement.offsetWidth, newX));
             newY = Math.max(0, Math.min(viewRect.height - selectedElement.offsetHeight, newY));
 
@@ -649,7 +633,7 @@
             selectedElement = null;
         }
 
-        // --- Levitation Core Stacking Rules ---
+        // --- Levitation Match Testing ---
         function evaluateLevitationDrop() {
             const controlRect = controlCup.getBoundingClientRect();
             let stackedMatchId = null;
@@ -658,11 +642,10 @@
                 const boxNode = document.getElementById(`box-${id}`);
                 const boxRect = boxNode.getBoundingClientRect();
 
-                // Check overlap alignment boundaries zone
                 const overlapX = Math.abs((controlRect.left + 33) - (boxRect.left + 36));
-                const overlapY = Math.abs((controlRect.top + 41) - (boxRect.top + 70));
+                const overlapY = Math.abs((controlRect.top + 41) - (boxRect.top + 100));
 
-                if (overlapX < 45 && overlapY < 75) {
+                if (overlapX < 45 && overlapY < 60) {
                     stackedMatchId = id;
                 }
             });
@@ -671,23 +654,19 @@
                 const targetBox = document.getElementById(`box-${stackedMatchId}`);
                 targetBox.appendChild(controlCup);
                 
-                // Reposition cleanly directly inside the cup structure wrapper
+                // Center perfectly inside target box
                 controlCup.style.left = "3px"; 
                 
-                // Hairdo floating level position translation styling rules
                 const props = magnetProperties[stackedMatchId];
                 controlCup.style.top = props.floatY + "px";
 
-                // Live Outputs
                 statusBadge.innerText = "Connected";
                 statusBadge.className = "badge active";
                 activeDisplay.innerText = `Magnet ${stackedMatchId}`;
                 levHeightDisplay.innerHTML = `${props.rp.toFixed(1)} <span class="unit-label">cm</span>`;
             } else {
-                // Returns to base docks on clean resets metrics
-                controlCup.style.left = initialPositions['control'].left + 'px';
-                controlCup.style.top = initialPositions['control'].top + 'px';
-                document.getElementById('workspacePanel').appendChild(controlCup);
+                controlCup.style.left = defaultControlPos.left + 'px';
+                controlCup.style.top = defaultControlPos.top + 'px';
                 
                 statusBadge.innerText = "Inactive";
                 statusBadge.className = "badge";
@@ -696,7 +675,7 @@
             }
         }
 
-        // --- Paper Clip Extraction Drop Logic ---
+        // --- Paperclip Processing ---
         function evaluatePaperclipDrop() {
             const cupRect = selectedElement.getBoundingClientRect();
             const supplyRect = clipSupplyStation.getBoundingClientRect();
@@ -707,10 +686,7 @@
 
             const containerClips = document.getElementById(`magnetClips-${id}`);
 
-            // Snaps accurately directly above the central clip tray item limits
             if (dx < 60 && Math.abs(dy) < 50) {
-                const viewRect = document.getElementById('labViewport').getBoundingClientRect();
-                
                 selectedElement.style.left = (clipSupplyStation.offsetLeft + 29) + 'px';
                 selectedElement.style.top = (clipSupplyStation.offsetTop - 76) + 'px';
 
@@ -718,11 +694,9 @@
                 statusBadge.className = "badge active";
                 activeDisplay.innerText = `Magnet ${id}`;
 
-                // Calculate clip attachment arrays profiles 
                 const props = magnetProperties[id];
                 clipsDisplay.innerHTML = `${props.ap} <span class="unit-label">clips</span>`;
 
-                // Render physical clips dangling directly under the container cup rim line
                 containerClips.innerHTML = '';
                 for (let i = 0; i < props.ap; i++) {
                     const clip = document.createElement('div');
@@ -731,7 +705,6 @@
                     containerClips.appendChild(clip);
                 }
             } else {
-                // Return to original table dock spot
                 const containerBox = document.getElementById(`box-${id}`);
                 containerBox.appendChild(selectedElement);
                 selectedElement.style.left = "0px";
