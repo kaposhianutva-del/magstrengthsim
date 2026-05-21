@@ -469,10 +469,10 @@
 
     <script>
         const magnetProperties = {
-            'A': { ap: 4,  rp: 1.2, floatY: 55 },  // Ferrite (Weak: slides deeply inside)
-            'B': { ap: 14, rp: 4.8, floatY: 12 },  // Neodymium (Strong: sticks out high like a hairdo)
-            'C': { ap: 7,  rp: 2.4, floatY: 40 },  // Cobalt (Medium)
-            'D': { ap: 10, rp: 3.5, floatY: 25 }   // Alnico (Medium-High)
+            'A': { ap: 4,  rp: 1.2, floatOffset: 65 },  // Ferrite (Weak: slides deeply inside)
+            'B': { ap: 14, rp: 4.8, floatOffset: 15 },  // Neodymium (Strong: sticks out high like a hairdo)
+            'C': { ap: 7,  rp: 2.4, floatOffset: 48 },  // Cobalt (Medium)
+            'D': { ap: 10, rp: 3.5, floatOffset: 32 }   // Alnico (Medium-High)
         };
 
         const instructionsText = {
@@ -552,8 +552,7 @@
             levHeightDisplay.innerHTML = `0.0 <span class="unit-label">cm</span>`;
             clipsDisplay.innerHTML = `0 <span class="unit-label">clips</span>`;
 
-            // Append safely to main viewport coordinate tree
-            labViewport.appendChild(controlCup);
+            // Control cup always lives directly on the viewport layer
             controlCup.style.left = defaultControlPos.left + 'px';
             controlCup.style.top = defaultControlPos.top + 'px';
 
@@ -574,7 +573,7 @@
         function startDrag(e) {
             const pageX = e.touches ? e.touches[0].pageX : e.pageX;
             const pageY = e.touches ? e.touches[0].pageY : e.pageY;
-            let targetNode = e.target.closest('.cup', '#controlCup');
+            let targetNode = e.target.closest('.cup, #controlCup');
             
             if (!targetNode) return;
             if (activeMode === 'levitation' && targetNode.id !== 'controlCup') return;
@@ -585,7 +584,7 @@
             isDragging = true;
             selectedElement = targetNode;
             
-            // Crucial Fix: Instantly pop item into parent container layer to absolute position beautifully
+            // Pop item instantly into viewport space to guarantee absolute drag tracking coordinates
             const rect = selectedElement.getBoundingClientRect();
             const viewRect = labViewport.getBoundingClientRect();
             labViewport.appendChild(selectedElement);
@@ -601,7 +600,6 @@
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
             const clientY = e.touches ? e.touches[0].clientY : e.clientY;
             
-            // Eye rotation tracks
             pupils.forEach(pupil => {
                 const eyeRect = pupil.parentElement.getBoundingClientRect();
                 const angle = Math.atan2(clientY - (eyeRect.top + 7), clientX - (eyeRect.left + 7));
@@ -633,38 +631,43 @@
             selectedElement = null;
         }
 
-        // --- Levitation Match Testing ---
+        // --- Permanent Viewport Layout Alignment Levitation Drop ---
         function evaluateLevitationDrop() {
             const controlRect = controlCup.getBoundingClientRect();
+            const viewRect = labViewport.getBoundingClientRect();
             let stackedMatchId = null;
 
             ['A', 'B', 'C', 'D'].forEach(id => {
-                const boxNode = document.getElementById(`box-${id}`);
-                const boxRect = boxNode.getBoundingClientRect();
+                const targetCup = document.getElementById(`cupElement-${id}`);
+                const cupRect = targetCup.getBoundingClientRect();
 
-                const overlapX = Math.abs((controlRect.left + 33) - (boxRect.left + 36));
-                const overlapY = Math.abs((controlRect.top + 41) - (boxRect.top + 100));
+                // Check overlap alignment boundaries using clean browser screen coordinates
+                const overlapX = Math.abs((controlRect.left + (controlRect.width / 2)) - (cupRect.left + (cupRect.width / 2)));
+                const overlapY = Math.abs((controlRect.top + (controlRect.height / 2)) - (cupRect.top + (cupRect.height / 2)));
 
-                if (overlapX < 45 && overlapY < 60) {
+                if (overlapX < 45 && overlapY < 80) {
                     stackedMatchId = id;
                 }
             });
 
             if (stackedMatchId) {
-                const targetBox = document.getElementById(`box-${stackedMatchId}`);
-                targetBox.appendChild(controlCup);
-                
-                // Center perfectly inside target box
-                controlCup.style.left = "3px"; 
-                
+                const targetCup = document.getElementById(`cupElement-${stackedMatchId}`);
+                const targetRect = targetCup.getBoundingClientRect();
                 const props = magnetProperties[stackedMatchId];
-                controlCup.style.top = props.floatY + "px";
+                
+                // Align perfectly on top of viewport layer to prevent ever getting trapped inside child grids
+                const exactX = (targetRect.left - viewRect.left) + 3;
+                const exactY = (targetRect.top - viewRect.top) - (82 - props.floatOffset);
+
+                controlCup.style.left = exactX + "px"; 
+                controlCup.style.top = exactY + "px";
 
                 statusBadge.innerText = "Connected";
                 statusBadge.className = "badge active";
                 activeDisplay.innerText = `Magnet ${stackedMatchId}`;
                 levHeightDisplay.innerHTML = `${props.rp.toFixed(1)} <span class="unit-label">cm</span>`;
             } else {
+                // Return safely to baseline home dock
                 controlCup.style.left = defaultControlPos.left + 'px';
                 controlCup.style.top = defaultControlPos.top + 'px';
                 
