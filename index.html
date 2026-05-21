@@ -111,7 +111,6 @@
         .lab-view {
             flex-grow: 1;
             position: relative;
-            overflow: hidden;
         }
 
         .lab-table-top {
@@ -128,39 +127,39 @@
             z-index: 5;
         }
 
-        /* Station Dock Grid */
+        /* Station Dock Grid - Condensed onto the left side */
         .station-grid {
             display: flex;
-            justify-content: space-around;
-            width: 92%;
+            width: 60%;
             position: absolute;
             bottom: 164px; 
-            left: 4%;
+            left: 6%;
             z-index: 10;
+            gap: 15px;
         }
 
         .magnet-station {
             display: flex;
             flex-direction: column;
             align-items: center;
-            width: 20%;
+            width: 23%;
             position: relative;
         }
 
         /* Cup Styling */
         .cup {
-            width: 76px;
-            height: 85px;
-            border-radius: 6px 6px 30px 30px;
+            width: 70px;
+            height: 80px;
+            border-radius: 6px 6px 26px 26px;
             position: relative;
             display: flex;
             justify-content: center;
             align-items: center;
             box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
-            transition: transform 0.1s;
+            z-index: 12;
+            transform: translate(0px, 0px);
         }
         
-        /* Individual Cup Colorings */
         .cup.cup-a { background: linear-gradient(135deg, #f87171 0%, #b91c1c 100%); border: 2px solid #991b1b; }
         .cup.cup-b { background: linear-gradient(135deg, #34d399 0%, #047857 100%); border: 2px solid #065f46; }
         .cup.cup-c { background: linear-gradient(135deg, #a78bfa 0%, #6d28d9 100%); border: 2px solid #5b21b6; }
@@ -169,44 +168,19 @@
         .cup-label {
             color: white;
             font-weight: bold;
-            font-size: 1.8rem;
+            font-size: 1.6rem;
             text-shadow: 0 2px 4px rgba(0,0,0,0.4);
-            margin-top: 12px;
+            margin-top: 10px;
         }
 
-        /* Googly Eyes */
-        .eyes {
-            position: absolute;
-            top: 18px;
-            display: flex;
-            gap: 10px;
-        }
-        .eye {
-            width: 15px;
-            height: 15px;
-            background: white;
-            border-radius: 50%;
-            position: relative;
-            border: 1px solid #64748b;
-        }
-        .pupil {
-            width: 7px;
-            height: 7px;
-            background: #0f172a;
-            border-radius: 50%;
-            position: absolute;
-            top: 3px;
-            left: 3px;
-        }
-
-        /* Glow active indicator */
+        /* Active highlight styling */
         .magnet-station.active .cup {
             box-shadow: 0 0 0 4px var(--glow-color), 0 10px 15px rgba(0,0,0,0.2);
         }
 
-        /* Hover Reveal Info Cards */
+        /* Hover Reveal Info Cards - Stacked horizontally cleanly */
         .info-card-wrapper {
-            margin-top: 45px;
+            margin-top: 15px;
             position: relative;
             width: 100%;
             display: flex;
@@ -216,21 +190,22 @@
         .info-trigger-btn {
             background: #e2e8f0;
             border: 1px solid #cbd5e1;
-            padding: 5px 10px;
+            padding: 6px 4px;
             border-radius: 6px;
-            font-size: 0.75rem;
+            font-size: 0.72rem;
             font-weight: bold;
             color: #475569;
             cursor: pointer;
-            width: 90px;
+            width: 82px;
             text-align: center;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            white-space: nowrap;
         }
 
         .info-card-popover {
             display: none;
             position: absolute;
-            top: 32px;
+            top: 34px;
             left: 50%;
             transform: translateX(-50%);
             background: white;
@@ -244,8 +219,7 @@
             pointer-events: none;
         }
 
-        .info-trigger-btn:hover + .info-card-popover,
-        .info-card-popover:hover {
+        .info-trigger-btn:hover + .info-card-popover {
             display: block;
         }
 
@@ -278,40 +252,30 @@
             line-height: 1.2;
         }
 
-        /* Central Paper Clip Supply Terminal Station */
+        /* Central Paper Clip Supply Dock shifted far right */
         .paperclip-supply-dock {
             position: absolute;
             bottom: 164px;
-            right: 45px;
-            width: 100px;
-            height: 40px;
+            right: 8%;
+            width: 140px;
+            height: 35px;
             background: #94a3b8;
             border: 3px solid #64748b;
-            border-radius: 8px 8px 2px 2px;
+            border-radius: 6px 6px 2px 2px;
             box-shadow: inset 0 4px 8px rgba(0,0,0,0.2);
             z-index: 6;
-            display: flex;
-            justify-content: center;
-            align-items: center;
         }
         
         .supply-label {
             position: absolute;
-            top: -18px;
+            top: -20px;
             width: 100%;
             text-align: center;
-            font-size: 0.7rem;
+            font-size: 0.75rem;
             font-weight: bold;
             color: #475569;
             text-transform: uppercase;
-        }
-
-        .clips-pile-mesh {
-            width: 80%;
-            height: 70%;
-            background: repeating-linear-gradient(45deg, #cbd5e1, #cbd5e1 2px, #334155 3px, #cbd5e1 5px);
-            opacity: 0.8;
-            border-radius: 4px;
+            letter-spacing: 0.5px;
         }
 
         /* Container for clips stuck to magnets */
@@ -333,7 +297,7 @@
             background: #cbd5e1;
         }
 
-        /* Metrics Logs Output Displays */
+        /* Metrics Display */
         .data-card {
             background: white;
             padding: 18px;
@@ -381,13 +345,11 @@
         <div class="lab-view" id="labViewport">
             
             <div class="control-cup" id="controlCup">
-                <div class="eyes"><div class="eye"><div class="pupil"></div></div><div class="eye"><div class="pupil"></div></div></div>
                 <div class="control-label">CONTROL<br>CUP</div>
             </div>
 
             <div class="paperclip-supply-dock" id="clipSupplyStation" style="display:none;">
                 <div class="supply-label">Clips Pile</div>
-                <div class="clips-pile-mesh"></div>
             </div>
 
             <div class="lab-table-top"></div>
@@ -396,7 +358,6 @@
                 
                 <div class="magnet-station" id="station-A" data-id="A">
                     <div class="cup cup-a" id="cupElement-A">
-                        <div class="eyes"><div class="eye"><div class="pupil"></div></div><div class="eye"><div class="pupil"></div></div></div>
                         <div class="cup-label">A</div>
                         <div class="attached-clips-container" id="magnetClips-A"></div>
                     </div>
@@ -412,7 +373,6 @@
 
                 <div class="magnet-station" id="station-B" data-id="B">
                     <div class="cup cup-b" id="cupElement-B">
-                        <div class="eyes"><div class="eye"><div class="pupil"></div></div><div class="eye"><div class="pupil"></div></div></div>
                         <div class="cup-label">B</div>
                         <div class="attached-clips-container" id="magnetClips-B"></div>
                     </div>
@@ -428,7 +388,6 @@
 
                 <div class="magnet-station" id="station-C" data-id="C">
                     <div class="cup cup-c" id="cupElement-C">
-                        <div class="eyes"><div class="eye"><div class="pupil"></div></div><div class="eye"><div class="pupil"></div></div></div>
                         <div class="cup-label">C</div>
                         <div class="attached-clips-container" id="magnetClips-C"></div>
                     </div>
@@ -444,7 +403,6 @@
 
                 <div class="magnet-station" id="station-D" data-id="D">
                     <div class="cup cup-d" id="cupElement-D">
-                        <div class="eyes"><div class="eye"><div class="pupil"></div></div><div class="eye"><div class="pupil"></div></div></div>
                         <div class="cup-label">D</div>
                         <div class="attached-clips-container" id="magnetClips-D"></div>
                     </div>
@@ -485,12 +443,12 @@
     </div>
 
     <script>
-        // --- Scientific Properties Baseline Configurations Engine ---
+        // --- Scientific Baseline Values Model ---
         const magnetProperties = {
-            'A': { ap: 4,  rp: 1.2 }, // Ferrite (Weak)
-            'B': { ap: 14, rp: 4.6 }, // Neodymium (Very Strong)
-            'C': { ap: 7,  rp: 2.3 }, // Cobalt (Medium)
-            'D': { ap: 10, rp: 3.2 }  // Alnico (Medium-High)
+            'A': { ap: 4,  rp: 1.2 }, // Ferrite
+            'B': { ap: 14, rp: 4.6 }, // Neodymium
+            'C': { ap: 7,  rp: 2.3 }, // Cobalt
+            'D': { ap: 10, rp: 3.2 }  // Alnico
         };
 
         const instructionsText = {
@@ -498,19 +456,21 @@
             'paperclip': `<strong>Paper Clip Mode:</strong><br><br>Click and drag the **Colored Cups (A-D)** across the lab workbench.<br><br>Bring them over to the grey **Clips Pile** box to see how many clips they pull up!`
         };
 
-        // State Machine Parameters Trackers
+        // State Trackers
         let activeMode = 'levitation';
         let currentActiveTarget = null;
         let isDragging = false;
         let draggedElement = null;
 
-        // Kinematics Vector Parameters
-        let currentX = 50, currentY = 50;
-        let targetX = 50, targetY = 50;
-        let levitationOffset = 0;
-
-        // Track tracking offsets parameters during interactive drags
+        // Kinematics Vector Mappings
+        let currentX = 60, currentY = 60;
+        let targetX = 60, targetY = 60;
+        
+        // Track visual drag offsets safely in transform coordinates
+        let dragOffsets = { 'A': {x:0, y:0}, 'B': {x:0, y:0}, 'C': {x:0, y:0}, 'D': {x:0, y:0} };
         let activeClipsCount = { 'A': 0, 'B': 0, 'C': 0, 'D': 0 };
+        let dragStartMouse = { x: 0, y: 0 };
+        let dragStartOffset = { x: 0, y: 0 };
 
         // Cache DOM Pointers
         const labViewport = document.getElementById('labViewport');
@@ -522,7 +482,6 @@
         const clipsDisplay = document.getElementById('clipsDisplay');
         const statusBadge = document.getElementById('statusBadge');
         const instructionsContent = document.getElementById('instructionsContent');
-        const pupils = document.querySelectorAll('.pupil');
 
         const modeLevBtn = document.getElementById('modeLevBtn');
         const modeClipBtn = document.getElementById('modeClipBtn');
@@ -539,7 +498,6 @@
             instructionsContent.innerHTML = instructionsText[mode];
             clearActiveState();
 
-            // Reset positioning rules across elements
             if (mode === 'levitation') {
                 modeLevBtn.classList.add('active');
                 modeClipBtn.classList.remove('active');
@@ -548,17 +506,17 @@
                 clipSupplyStation.style.display = "none";
                 controlCup.style.display = "flex";
 
-                // Re-dock colored magnet cups safely
+                // Reset positions using transform safely
                 stations.forEach(station => {
+                    const id = station.getAttribute('data-id');
                     const cup = station.querySelector('.cup');
-                    cup.style.position = 'relative';
-                    cup.style.left = '0px';
-                    cup.style.top = '0px';
+                    dragOffsets[id] = {x: 0, y: 0};
+                    cup.style.transform = `translate(0px, 0px)`;
                     cup.style.cursor = 'default';
                     station.querySelector('.attached-clips-container').innerHTML = '';
                 });
                 
-                targetX = 40; targetY = 40; currentX = 40; currentY = 40;
+                targetX = 60; targetY = 60; currentX = 60; currentY = 60;
             } else {
                 modeClipBtn.classList.add('active');
                 modeLevBtn.classList.remove('active');
@@ -587,9 +545,8 @@
         modeLevBtn.addEventListener('click', () => setMode('levitation'));
         modeClipBtn.addEventListener('click', () => setMode('paperclip'));
 
-        // --- Drag Engine Logic ---
+        // --- Core Unified Mouse Drag Systems ---
         window.addEventListener('mousedown', (e) => {
-            const rect = labViewport.getBoundingClientRect();
             if (activeMode === 'levitation') {
                 const cupRect = controlCup.getBoundingClientRect();
                 if (e.clientX >= cupRect.left && e.clientX <= cupRect.right &&
@@ -605,47 +562,46 @@
                         e.clientY >= cupRect.top && e.clientY <= cupRect.bottom) {
                         isDragging = true;
                         draggedElement = cupEl;
+                        const id = station.getAttribute('data-id');
+                        
+                        dragStartMouse.x = e.clientX;
+                        dragStartMouse.y = e.clientY;
+                        dragStartOffset.x = dragOffsets[id].x;
+                        dragStartOffset.y = dragOffsets[id].y;
                     }
                 });
             }
         });
 
         window.addEventListener('mousemove', (e) => {
-            const rect = labViewport.getBoundingClientRect();
-            const mouseX = e.clientX - rect.left;
-            const mouseY = e.clientY - rect.top;
-
-            trackEyes(e.clientX, e.clientY);
-
             if (!isDragging || !draggedElement) return;
 
+            const rect = labViewport.getBoundingClientRect();
+
             if (activeMode === 'levitation') {
-                targetX = mouseX - (controlCup.offsetWidth / 2);
-                targetY = mouseY - (controlCup.offsetHeight / 2);
-                targetX = Math.max(-10, Math.min(rect.width - controlCup.offsetWidth + 10, targetX));
-                targetY = Math.max(0, Math.min(rect.height - 200, targetY));
+                targetX = e.clientX - rect.left - 35;
+                targetY = e.clientY - rect.top - 40;
+                
+                targetX = Math.max(-10, Math.min(rect.width - 60, targetX));
+                targetY = Math.max(-10, Math.min(rect.height - 120, targetY));
             } else {
-                // Free Drag individual color cups in Paper Clip Mode
-                draggedElement.style.position = 'absolute';
-                
-                // Track direct workspace constraints coordinates values mappings
-                let calcLeft = mouseX - (draggedElement.offsetWidth / 2);
-                let calcTop = mouseY - (draggedElement.offsetHeight / 2);
-                
-                calcLeft = Math.max(0, Math.min(rect.width - draggedElement.offsetWidth, calcLeft));
-                calcTop = Math.max(0, Math.min(rect.height - 130, calcTop));
-
-                draggedElement.style.left = `${calcLeft}px`;
-                draggedElement.style.top = `${calcTop}px`;
-
                 const id = draggedElement.parentElement.getAttribute('data-id');
+                
+                const deltaX = e.clientX - dragStartMouse.x;
+                const deltaY = e.clientY - dragStartMouse.y;
+                
+                dragOffsets[id].x = dragStartOffset.x + deltaX;
+                dragOffsets[id].y = dragStartOffset.y + deltaY;
+
+                draggedElement.style.transform = `translate(${dragOffsets[id].x}px, ${dragOffsets[id].y}px)`;
+
                 evaluateClipExtraction(id, draggedElement);
             }
         });
 
         window.addEventListener('mouseup', () => { isDragging = false; draggedElement = null; });
 
-        // Touch systems maps
+        // Touch System Normalizer Mapping Engine
         window.addEventListener('touchstart', (e) => {
             if(e.touches.length === 0) return;
             const touch = e.touches[0];
@@ -664,6 +620,11 @@
                         touch.clientY >= cupRect.top && touch.clientY <= cupRect.bottom) {
                         isDragging = true;
                         draggedElement = cupEl;
+                        const id = station.getAttribute('data-id');
+                        dragStartMouse.x = touch.clientX;
+                        dragStartMouse.y = touch.clientY;
+                        dragStartOffset.x = dragOffsets[id].x;
+                        dragStartOffset.y = dragOffsets[id].y;
                     }
                 });
             }
@@ -673,29 +634,26 @@
             if(!isDragging || !draggedElement || e.touches.length === 0) return;
             const touch = e.touches[0];
             const rect = labViewport.getBoundingClientRect();
-            const tX = touch.clientX - rect.left;
-            const tY = touch.clientY - rect.top;
 
             if (activeMode === 'levitation') {
-                targetX = tX - (controlCup.offsetWidth / 2);
-                targetY = tY - (controlCup.offsetHeight / 2);
+                targetX = touch.clientX - rect.left - 35;
+                targetY = touch.clientY - rect.top - 40;
             } else {
-                draggedElement.style.position = 'absolute';
-                draggedElement.style.left = `${Math.max(0, Math.min(rect.width - 70, tX - 35))}px`;
-                draggedElement.style.top = `${Math.max(0, Math.min(rect.height - 130, tY - 40))}px`;
                 const id = draggedElement.parentElement.getAttribute('data-id');
+                dragOffsets[id].x = dragStartOffset.x + (touch.clientX - dragStartMouse.x);
+                dragOffsets[id].y = dragStartOffset.y + (touch.clientY - dragStartMouse.y);
+                draggedElement.style.transform = `translate(${dragOffsets[id].x}px, ${dragOffsets[id].y}px)`;
                 evaluateClipExtraction(id, draggedElement);
             }
         });
 
         window.addEventListener('touchend', () => { isDragging = false; draggedElement = null; });
 
-        // --- Paper Clip Extraction Evaluation Logic ---
+        // --- Paper Clip Target Matching Evaluation ---
         function evaluateClipExtraction(id, element) {
             const supplyRect = clipSupplyStation.getBoundingClientRect();
             const cupRect = element.getBoundingClientRect();
 
-            // Compute distances between center targets coordinates parameters
             const supplyCenter = { x: supplyRect.left + supplyRect.width / 2, y: supplyRect.top };
             const cupBottomCenter = { x: cupRect.left + cupRect.width / 2, y: cupRect.bottom };
 
@@ -704,23 +662,24 @@
 
             const containerClips = document.getElementById(`magnetClips-${id}`);
 
-            // Snapping threshold boundaries to the central tray
-            if (dx < 45 && dy < 40) {
-                const viewRect = labViewport.getBoundingClientRect();
+            if (dx < 50 && dy < 45) {
+                // Pin directly over the active pile zone cleanly
+                const parentStation = element.parentElement;
+                const targetXTrans = (clipSupplyStation.offsetLeft + 35) - (parentStation.offsetLeft + 35);
+                const targetYTrans = (clipSupplyStation.offsetTop - 70) - parentStation.offsetTop;
                 
-                // Snap directly onto tracking lines over layout models
-                element.style.left = `${clipSupplyStation.offsetLeft + 12}px`;
-                element.style.top = `${clipSupplyStation.offsetTop - 75}px`;
+                dragOffsets[id].x = targetXTrans;
+                dragOffsets[id].y = targetYTrans;
+                element.style.transform = `translate(${targetXTrans}px, ${targetYTrans}px)`;
 
                 if (activeClipsCount[id] === 0) {
                     clearActiveState();
                     currentActiveTarget = id;
-                    element.parentElement.classList.add('active');
+                    parentStation.classList.add('active');
                     activeDisplay.innerText = `Magnet ${id}`;
                     statusBadge.innerText = "Connected";
                     statusBadge.className = "badge active";
 
-                    // Calculate picked up clips with minor randomness
                     const baseCount = magnetProperties[id].ap;
                     const errorVariance = Math.floor(Math.random() * 3) - 1; 
                     const totalClipsCalculated = Math.max(1, baseCount + errorVariance);
@@ -746,30 +705,22 @@
             }
         }
 
-        function trackEyes(mouseX, mouseY) {
-            pupils.forEach(pupil => {
-                const eyeRect = pupil.parentElement.getBoundingClientRect();
-                const eyeCenterX = eyeRect.left + eyeRect.width / 2;
-                const eyeCenterY = eyeRect.top + eyeRect.height / 2;
-                const radAngle = Math.atan2(mouseY - eyeCenterY, mouseX - eyeCenterX);
-                pupil.style.transform = `translate(${Math.cos(radAngle) * 3}px, ${Math.sin(radAngle) * 3}px)`;
-            });
-        }
-
-        // --- Core Physics System Animation Engine Architecture Loops ---
+        // --- Core Animation Loops ---
         function physicsAnimationLoop() {
             if (activeMode === 'levitation') {
-                currentX += (targetX - currentX) * 0.2;
-                currentY += (targetY - currentY) * 0.2;
+                // Absolute positioning calculation matrix engine
+                currentX += (targetX - currentX) * 0.25;
+                currentY += (targetY - currentY) * 0.25;
 
                 let closestId = null;
-                let minimumProximity = 65; 
+                let minimumProximity = 60; 
                 
-                const controlCenterLineX = currentX + (controlCup.offsetWidth / 2);
+                const controlCenterLineX = currentX + 35;
 
                 stations.forEach(station => {
                     const id = station.getAttribute('data-id');
-                    const targetBaseX = station.offsetLeft + (station.offsetWidth / 2);
+                    // Compute absolute distance vectors relative to container lines
+                    const targetBaseX = station.offsetLeft + 6 + (station.offsetWidth / 2);
                     const gapDistanceX = Math.abs(controlCenterLineX - targetBaseX);
 
                     if (gapDistanceX < minimumProximity) {
@@ -796,29 +747,26 @@
                     const activeProperties = magnetProperties[currentActiveTarget];
                     const activeStationNode = document.getElementById(`station-${currentActiveTarget}`);
                     
-                    // Snap the horizontal X vector cleanly into center stack position layout lines
-                    const targetAlignX = activeStationNode.offsetLeft + (activeStationNode.offsetWidth / 2) - (controlCup.offsetWidth / 2);
+                    // Force clean horizontal tracking over alignment track
+                    const targetAlignX = activeStationNode.offsetLeft + 6 + (activeStationNode.offsetWidth / 2) - 35;
                     currentX += (targetAlignX - currentX) * 0.3; 
 
-                    // Target Y surface calculation tracking parameters offsets
                     const cupTopSurfaceY = activeStationNode.offsetTop;
-                    const verticalDistanceGap = Math.max(0, cupTopSurfaceY - currentY);
-
-                    // If lowering the control cup inside tracking lines bounds boundaries
-                    if (verticalDistanceGap < 180) {
-                        const compressionFactor = Math.max(0, (180 - verticalDistanceGap) / 180);
+                    
+                    // Stack detection zone
+                    if (targetY > cupTopSurfaceY - 140 && targetY < cupTopSurfaceY + 20) {
+                        const distanceFactor = Math.max(0, Math.min(1, (targetY - (cupTopSurfaceY - 140)) / 140));
+                        const computedLevHeightValue = activeProperties.rp * (1 - distanceFactor) * 1.05;
                         
-                        // Calculate resistance repulsion vector forces value maps
-                        const computedLevHeightValue = activeProperties.rp * compressionFactor * 1.1;
                         levHeightDisplay.innerHTML = `${computedLevHeightValue.toFixed(1)} <span class="unit-label">cm</span>`;
-
-                        // Levitation height translates directly to visual stack height inside the red cup
-                        // Lower RP values allow it to slide deeper down into the magnet cup
-                        const baseStackInCupY = cupTopSurfaceY - 32; 
-                        const bounceLevitationVisualHeight = computedLevHeightValue * 8; 
                         
-                        const physicalTargetY = baseStackInCupY - bounceLevitationVisualHeight;
-                        currentY += (physicalTargetY - currentY) * 0.25;
+                        // Stop movement from crashing straight into base layout boundaries
+                        const minAllowedY = cupTopSurfaceY - 30 - (computedLevHeightValue * 8);
+                        if (currentY > minAllowedY) {
+                            currentY = minAllowedY;
+                        }
+                    } else {
+                        levHeightDisplay.innerHTML = `0.0 <span class="unit-label">cm</span>`;
                     }
                 }
 
